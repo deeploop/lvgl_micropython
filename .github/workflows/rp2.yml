@@ -1,0 +1,46 @@
+# Copyright (c) 2024 - 2025 Kevin G. Schlosser
+
+name: RP2 build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build_rp2:
+    if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1.11.1
+      with:
+        release: 'latest'
+
+    - uses: actions/setup-python@v6.1.0
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build
+        git submodule update --init --depth 1 -- lib/pycparser
+        git submodule update --init --depth 1 --jobs 4 -- lib/micropython
+        git submodule update --init --depth 1 --jobs 4 -- lib/lvgl
+
+    - name: Build RPI_PICO
+      run: python3 make.py rp2 BOARD=RPI_PICO DISPLAY=st7789 INDEV=xpt2046
+
+    - name: Build RPI_PICO_W
+      run: python3 make.py rp2 BOARD=RPI_PICO_W DISPLAY=st7789 INDEV=xpt2046
+
+    - name: Build ADAFRUIT_FEATHER_RP2040
+      run: python3 make.py rp2 BOARD=ADAFRUIT_FEATHER_RP2040 DISPLAY=st7789 INDEV=xpt2046
+
+    - uses: actions/upload-artifact@v5
+      with:
+        name: lvgl_micropy_rp2
+        path: build/*.uf2
+        if-no-files-found: ignore

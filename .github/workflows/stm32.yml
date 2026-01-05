@@ -1,0 +1,46 @@
+# Copyright (c) 2024 - 2025 Kevin G. Schlosser
+
+name: STM32 build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build_stm32:
+    if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1.11.1
+      with:
+        release: 'latest'
+
+    - uses: actions/setup-python@v6.1.0
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build
+        git submodule update --init --depth 1 -- lib/pycparser
+        git submodule update --init --depth 1 --jobs 4 -- lib/micropython
+        git submodule update --init --depth 1 --jobs 4 -- lib/lvgl
+
+    - name: Build STM32H7B3I_DK
+      run: python3 make.py stm32 BOARD=STM32H7B3I_DK DISPLAY=rgb_display INDEV=gt911
+
+    - name: Build STM32F429DISC
+      run: python3 make.py stm32 BOARD=STM32F429DISC DISPLAY=ili9341 INDEV=xpt2046
+
+    - name: Build NUCLEO_H743ZI
+      run: python3 make.py stm32 BOARD=NUCLEO_H743ZI DISPLAY=st7789 INDEV=xpt2046
+
+    - uses: actions/upload-artifact@v5
+      with:
+        name: lvgl_micropy_stm32
+        path: build/*.hex
+        if-no-files-found: ignore

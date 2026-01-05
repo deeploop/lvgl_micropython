@@ -1,5 +1,8 @@
+[![CI](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/ci.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/ci.yml)
 [![Unix build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/unix.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/unix.yml)
 [![macOS build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/macOS.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/macOS.yml)
+[![RP2 build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/rp2.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/rp2.yml)
+[![STM32 build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/stm32.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/stm32.yml)
 
 
 ***IMPORTANT READ ME FIRST***
