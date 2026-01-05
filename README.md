@@ -1,5 +1,6 @@
 [![Unix build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/unix.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/unix.yml)
 [![macOS build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/macOS.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/macOS.yml)
+[![Windows build](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/windows.yml/badge.svg)](https://github.com/lvgl-micropython/lvgl_micropython/actions/workflows/windows.yml)
 
 
 ***IMPORTANT READ ME FIRST***

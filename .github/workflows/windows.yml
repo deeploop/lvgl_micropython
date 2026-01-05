@@ -1,0 +1,109 @@
+# Copyright (c) 2024 - 2025 Kevin G. Schlosser
+
+name: Windows build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build_esp32_windows:
+    if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-python@v6.1.0
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        git submodule update --init --depth 1 -- lib/pycparser
+        git submodule update --init --depth 1 --jobs 4 -- lib/micropython
+        git submodule update --init --depth 1 --jobs 4 -- lib/lvgl
+
+    - name: Cached Deps
+      id: cache-deps
+      uses: actions/cache@v4.3.0
+      with:
+        path: |
+          lib/esp-idf
+          ${{ env.USERPROFILE }}\.espressif
+        key: ${{ runner.os }}-v4-deps
+
+    - name: Get Build Deps
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        git submodule update --init --depth 1 --jobs 4 -- lib/esp-idf
+        cd lib/esp-idf
+        git submodule update --init --depth 1 --jobs 4 -- components/bt/host/nimble/nimble components/esp_wifi components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls components/bt/controller/lib_esp32 components/bt/controller/lib_esp32c3_family
+        cd ../..
+        $env:IDF_PATH = "${{ github.workspace }}\lib\esp-idf"
+        .\lib\esp-idf\install.ps1
+
+    - name: Setup ESP-IDF
+      shell: pwsh
+      run: |
+        $env:IDF_PATH = "${{ github.workspace }}\lib\esp-idf"
+        .\lib\esp-idf\export.ps1
+
+    - name: Build ESP32_GENERIC_P4 8MB
+      shell: pwsh
+      run: |
+        $env:IDF_PATH = "${{ github.workspace }}\lib\esp-idf"
+        .\lib\esp-idf\export.ps1
+        python make.py esp32 BOARD=ESP32_GENERIC_P4 --flash-size=8 DISPLAY=all INDEV=all EXPANDER=all --ccache --no-scrub
+
+    - name: Build ESP32_GENERIC_P4 C6_WIFI 8MB
+      shell: pwsh
+      run: |
+        $env:IDF_PATH = "${{ github.workspace }}\lib\esp-idf"
+        .\lib\esp-idf\export.ps1
+        python make.py esp32 BOARD=ESP32_GENERIC_P4 --flash-size=8 BOARD_VARIANT=C6_WIFI DISPLAY=all INDEV=all EXPANDER=all --ccache --no-scrub
+
+    - name: Build ESP32_GENERIC_S3 4MB
+      shell: pwsh
+      run: |
+        $env:IDF_PATH = "${{ github.workspace }}\lib\esp-idf"
+        .\lib\esp-idf\export.ps1
+        python make.py esp32 BOARD=ESP32_GENERIC_S3 DISPLAY=all INDEV=all EXPANDER=all --ccache --no-scrub
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v5
+      with:
+        name: lvgl_micropy_ESP32_Windows
+        path: build/*.bin
+        if-no-files-found: error
+
+  build_windows_port:
+    if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-python@v6.1.0
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        git submodule update --init --depth 1 -- lib/pycparser
+        git submodule update --init --depth 1 --jobs 4 -- lib/micropython
+        git submodule update --init --depth 1 --jobs 4 -- lib/lvgl
+        git submodule update --init --depth 1 --jobs 4 -- lib/SDL
+
+    - name: Build Windows port
+      shell: pwsh
+      run: |
+        python make.py windows DISPLAY=sdl_display INDEV=sdl_pointer
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v5
+      with:
+        name: lvgl_micropy_windows
+        path: build/lvgl_micropy_windows.exe
+        if-no-files-found: ignore
