@@ -1,0 +1,50 @@
+# Copyright (c) 2024 - 2025 Kevin G. Schlosser
+
+name: Windows build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_windows:
+    if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-python@v6.1.0
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install --assume-yes build-essential pkg-config cmake mingw-w64
+        git submodule update --init --depth 1 -- lib/pycparser
+        git submodule update --init --depth 1 --jobs 4 -- lib/micropython
+        git submodule update --init --depth 1 --jobs 4 -- lib/lvgl
+        git submodule update --init --depth 1 --jobs 4 -- lib/SDL
+        cd lib/SDL
+        git checkout release-2.30.2
+        cd ../..
+
+    - name: Build Windows port
+      run: |
+        python3 make.py windows DISPLAY=sdl_display INDEV=sdl_pointer
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v5
+      with:
+        name: lvgl_micropy_windows
+        path: |
+          build/*.exe
+          build/*.dll
+          build/**/*.exe
+          build/**/*.dll
+        if-no-files-found: warn
