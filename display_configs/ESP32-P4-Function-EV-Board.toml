@@ -1,0 +1,84 @@
+# ESP32-P4 Function Evaluation Board Configuration
+# Board: ESP32-P4-Function-EV-Board V1.4
+# Display: ili9881c 800x1280 MIPI-DSI (rotated to 800x480 landscape)
+# Touch: GT911 I2C
+
+[MCU.esp32]
+BOARD = "ESP32_GENERIC_P4"
+flash_size = 16
+enable_jtag_repl = 'n'
+enable_cdc_repl = 'y'
+enable_uart_repl = 'y'
+uart_repl_bitrate = 115200
+
+# MIPI-DSI Bus Configuration
+# 2 data lanes @ 1000 Mbps per lane
+[DSIBus.display_bus]
+bus_id = 0
+data_lanes = 2
+freq = 1000  # 1000 Mbps (1 Gbps) per lane
+virtual_channel = 0
+# Display timing for 800x1280 panel (ili9881c)
+hsync_front_porch = 40
+hsync_back_porch = 140
+hsync_pulse_width = 40
+vsync_front_porch = 16
+vsync_back_porch = 16
+vsync_pulse_width = 4
+
+# I2C Bus for Touch Controller
+[I2C.Bus.i2c_bus]
+host = 0
+scl = 8
+sda = 7
+freq = 400000
+
+# GT911 Touch Controller Device
+[I2C.Device.touch_device]
+bus = "i2c_bus"
+dev_id = "gt911.I2C_ADDR"
+reg_bits = "gt911.BITS"
+
+# MIPI-DSI Display Configuration
+# Physical: 800x1280 (portrait)
+# Logical: 800x480 (landscape with rotation)
+[DSIDisplay.display]
+data_bus = "display_bus"
+display_width = 800
+display_height = 1280
+backlight_pin = 23
+color_space = "lv.COLOR_FORMAT.RGB565"
+# Software rotation to landscape mode
+rotation = 90
+
+# Display Power On
+[display.set_power]
+params = [true]
+
+# Display Initialization
+[display.init]
+params = []
+
+# GT911 Touch Controller
+[GT911.indev]
+device = "touch_device"
+
+# Touch Firmware Configuration
+[indev.firmware_config.fw_config]
+
+[fw_config.width]
+value = 800
+
+[fw_config.height]
+value = 480
+
+[fw_config.save]
+params = []
+
+# Backlight Configuration (100% brightness)
+[display.set_backlight]
+params = [100]
+
+# LVGL Task Handler
+[task_handler.TaskHandler]
+params = []
