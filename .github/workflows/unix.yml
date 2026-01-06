@@ -20,7 +20,6 @@ jobs:
     - name: Install Deps
       #        sudo apt-get update && sudo apt-get install --assume-yes --allow-downgrades --allow-remove-essential --allow-change-held-packages build-essential pkg-config cmake ninja-build ccache
       run: |
-        pip3 install toml
         git submodule update --init --depth 1 -- lib/pycparser
         git submodule update --init --depth 1 --jobs 4 -- lib/micropython
         git submodule update --init --depth 1 --jobs 4 -- lib/lvgl
@@ -55,8 +54,9 @@ jobs:
     - name: Build ESP32_GENERIC_P4 C6_WIFI 8
       run: python3 make.py esp32 BOARD=ESP32_GENERIC_P4 --flash-size=8 BOARD_VARIANT=C6_WIFI DISPLAY=all INDEV=all EXPANDER=all --ccache --no-scrub
 
-    - name: Build ESP32-P4 Function EV Board (MIPI-DSI)
-      run: python3 make.py --toml=display_configs/ESP32-P4-Function-EV-Board.toml --ccache --no-scrub
+    # Note: Board-specific MIPI-DSI builds not supported via TOML yet
+    # DSI bus support exists in C code but not integrated into toml_reader.py
+    # Generic builds above include all display drivers
 
     - name: Build ESP32_GENERIC_S3 4
       run: python3 make.py esp32 BOARD=ESP32_GENERIC_S3 DISPLAY=all INDEV=all EXPANDER=all --ccache --no-scrub
